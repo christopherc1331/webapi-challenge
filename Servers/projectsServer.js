@@ -9,6 +9,15 @@ router.get("/", (req, res) => {
     .catch(err => res.status(500).json({ success: false, err }));
 });
 
+router.get("/:id/actions", (req, res) => {
+  const { id } = req.params;
+
+  projectDb
+    .getProjectActions(id)
+    .then(projects => res.status(200).json({ success: true, projects }))
+    .catch(err => res.status(500).json({ success: false, err }));
+});
+
 router.post("/", (req, res) => {
   const newPost = req.body;
 
