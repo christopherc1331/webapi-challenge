@@ -2,26 +2,16 @@ const express = require("express");
 const router = express.Router();
 const actionDb = require("../data/helpers/actionModel.js");
 
-router.get("/", (req, res) => {
+router.get("/:id", validateActionId, (req, res) => {
+  const { id } = req.params;
+
   actionDb
-    .get()
+    .get(id)
     .then(projects => res.status(200).json({ success: true, projects }))
     .catch(err => res.status(500).json({ success: false, err }));
 });
 
-router.post("/:id/actions", (req, res) => {
-  const newAction = req.body;
-  const { id } = req.params;
-
-  newAction.project_id = id;
-
-  actionDb
-    .insert(newPost)
-    .then(addedPost => res.status(201).json({ success: true, addedPost }))
-    .catch(err => res.status(500).json({ success: false, err }));
-});
-
-router.put("/:id", (req, res) => {
+router.put("/:id", validateActionId, (req, res) => {
   const updatedActionInfo = req.body;
   const { id } = req.params;
 
@@ -31,7 +21,7 @@ router.put("/:id", (req, res) => {
     .catch(err => res.status(500).json({ success: false, err }));
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", validateActionId, (req, res) => {
   const { id } = req.params;
 
   actionDb
@@ -39,5 +29,29 @@ router.delete("/:id", (req, res) => {
     .then(() => res.status(200).end())
     .catch(err => res.status(500).json({ success: false, err }));
 });
+
+function validateActionId(req, res, next) {
+  const { id } = req.params;
+
+  if (id == undefined || id == "" || id.length == 0) {
+    res
+      .status(400)
+      .json({ success: false, message: "No id passed into params" });
+  }
+
+  actionDb
+    .get(id)
+    .then(user => {
+      console.log(user);
+      if (user == undefined || user == "" || user.length == 0) {
+        res
+          .status(400)
+          .json({ success: false, message: "No action found with that Id" });
+      } else {
+        next();
+      }
+    })
+    .catch(err => res.status(500).json({ success: false, err }));
+}
 
 module.exports = router;
